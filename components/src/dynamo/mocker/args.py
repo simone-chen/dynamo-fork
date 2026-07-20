@@ -113,7 +113,7 @@ def resolve_planner_profile_data(
     raise FileNotFoundError(
         f"Path '{planner_profile_data}' is neither a mocker-format NPZ file nor a valid profiler results directory.\n"
         f"Expected either:\n"
-        f"  - A .npz file with keys: prefill_isl, prefill_ttft_ms, decode_active_kv_tokens, decode_context_length, decode_itl\n"
+        f"  - A .npz file with the shared decode keys and either legacy 1D or batch-aware 3D prefill keys\n"
         f"  - A directory containing selected_prefill_interpolation/raw_data.npz and selected_decode_interpolation/raw_data.npz\n"
         f"  - A directory containing prefill_raw_data.json and decode_raw_data.json"
     )

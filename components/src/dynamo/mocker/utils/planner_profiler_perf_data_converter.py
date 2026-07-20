@@ -166,9 +166,8 @@ def is_profile_results_dir(path: Path) -> bool:
 def is_mocker_format_npz(path: Path) -> bool:
     """Check if the given path is a mocker-format NPZ file.
 
-    A mocker-format NPZ file contains:
-    - prefill_isl, prefill_ttft_ms
-    - decode_active_kv_tokens, decode_context_length, decode_itl
+    A mocker-format NPZ file contains the shared decode arrays plus either the
+    legacy 1D prefill arrays or the batch-aware 3D prefill arrays.
     """
     if not path.is_file():
         return False
@@ -177,14 +176,23 @@ def is_mocker_format_npz(path: Path) -> bool:
 
     try:
         with np.load(path) as data:
-            required_keys = {
-                "prefill_isl",
-                "prefill_ttft_ms",
+            decode_keys = {
                 "decode_active_kv_tokens",
                 "decode_context_length",
                 "decode_itl",
             }
-            return required_keys.issubset(data.keys())
+            legacy_prefill_keys = {"prefill_isl", "prefill_ttft_ms"}
+            batch_aware_prefill_keys = {
+                "prefill_batch_size",
+                "prefill_new_tokens_per_request",
+                "prefill_kv_read_tokens_per_request",
+                "prefill_time_ms",
+            }
+            keys = set(data.keys())
+            return decode_keys.issubset(keys) and (
+                legacy_prefill_keys.issubset(keys)
+                or batch_aware_prefill_keys.issubset(keys)
+            )
     except Exception:
         return False
 

@@ -13,6 +13,9 @@ import pytest
 from dynamo.llm import EngineType, EntrypointArgs
 from dynamo.mocker import MockEngineArgs
 from dynamo.mocker.args import parse_args
+from dynamo.mocker.utils.planner_profiler_perf_data_converter import (
+    is_mocker_format_npz,
+)
 
 MODULE_PATH = Path(__file__).resolve().parents[2] / "config.py"
 SPEC = importlib.util.spec_from_file_location("dynamo_mocker_config", MODULE_PATH)
@@ -336,6 +339,22 @@ def test_build_mocker_engine_args_preserves_cli_mapped_fields(tmp_path):
     assert engine_args.bandwidth_g2_to_g1_gbps == 14.0
     assert engine_args.bandwidth_g2_to_g3_gbps == 7.0
     assert engine_args.bandwidth_g3_to_g2_gbps == 7.0
+
+
+def test_batch_aware_prefill_npz_is_mocker_format(tmp_path):
+    planner_profile_data = tmp_path / "batch_aware_profile.npz"
+    np.savez(
+        planner_profile_data,
+        prefill_batch_size=np.array([1.0, 2.0]),
+        prefill_new_tokens_per_request=np.array([64.0, 128.0]),
+        prefill_kv_read_tokens_per_request=np.array([0.0, 256.0]),
+        prefill_time_ms=np.ones((2, 2, 2)),
+        decode_active_kv_tokens=np.array([0.0, 1024.0]),
+        decode_context_length=np.array([1.0, 128.0]),
+        decode_itl=np.ones((2, 2)),
+    )
+
+    assert is_mocker_format_npz(planner_profile_data)
 
 
 def test_aic_backend_override_decouples_from_engine_type():

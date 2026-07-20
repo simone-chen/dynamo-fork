@@ -245,6 +245,18 @@ By default, the mocker uses hardcoded polynomial formulas to estimate prefill an
 
 The mocker automatically accepts profiler-style results directories and converts them internally.
 
+Mocker-format NPZ files contain the three shared decode arrays:
+
+- `decode_active_kv_tokens`
+- `decode_context_length`
+- `decode_itl`
+
+Prefill data may use the legacy one-dimensional arrays (`prefill_isl`,
+`prefill_ttft_ms`) or the batch-aware arrays (`prefill_batch_size`,
+`prefill_new_tokens_per_request`, `prefill_kv_read_tokens_per_request`,
+`prefill_time_ms`). The batch-aware layout preserves scheduler batch shape and
+prefix/KV-read effects. Legacy files remain supported.
+
 It also accepts older raw-data directories containing:
 
 - `prefill_raw_data.json`
